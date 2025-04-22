@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ApplicationModal } from "@/components/application-modal"
-import { MapPin, Clock, Loader2 } from "lucide-react"
+import { MapPin, Clock, Loader2, Calendar } from "lucide-react"
 import { getJobs } from "@/lib/actions"
+import { format } from "date-fns"
 
 export function JobListings() {
   const [jobs, setJobs] = useState<any[]>([])
@@ -49,7 +50,16 @@ export function JobListings() {
     window.open(url, "_blank")
   }
 
+  const isJobActive = (job: any) => {
+    if (!job.last_apply_date) return true
+    const lastApplyDate = new Date(job.last_apply_date)
+    return lastApplyDate >= new Date()
+  }
+
   const filteredJobs = jobs.filter((job) => {
+    // Only show active jobs (where last_apply_date is in the future or not set)
+    if (!isJobActive(job)) return false
+
     const matchesSearch =
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -201,10 +211,16 @@ export function JobListings() {
                   <MapPin className="h-4 w-4 mr-2" />
                   <span>{job.location}</span>
                 </div>
-                <div className="flex items-center text-sm text-gray-500 mb-4">
+                <div className="flex items-center text-sm text-gray-500 mb-2">
                   <Clock className="h-4 w-4 mr-2" />
                   <span>{job.type}</span>
                 </div>
+                {job.last_apply_date && (
+                  <div className="flex items-center text-sm text-gray-500 mb-4">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    <span>Apply by: {format(new Date(job.last_apply_date), "MMM dd, yyyy")}</span>
+                  </div>
+                )}
                 <div className="mt-4">
                   <h4 className="font-medium mb-2">Requirements:</h4>
                   <ul className="list-disc pl-5 space-y-1">

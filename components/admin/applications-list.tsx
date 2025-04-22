@@ -6,8 +6,18 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { getApplicationsByJob, updateApplicationStatus } from "@/lib/actions"
-import { Loader2, Eye } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { getApplicationsByJob, updateApplicationStatus, deleteApplication } from "@/lib/actions"
+import { Loader2, Eye, Trash2 } from "lucide-react"
 import { ApplicationDetails } from "./application-details"
 
 interface ApplicationsListProps {
@@ -21,6 +31,9 @@ export function ApplicationsList({ jobs }: ApplicationsListProps) {
   const [selectedApplication, setSelectedApplication] = useState<any | null>(null)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
   const [statusUpdating, setStatusUpdating] = useState<string | null>(null)
+  const [applicationToDelete, setApplicationToDelete] = useState<string | null>(null)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     if (selectedJobId) {
@@ -59,6 +72,29 @@ export function ApplicationsList({ jobs }: ApplicationsListProps) {
       console.error("Error updating application status:", error)
     } finally {
       setStatusUpdating(null)
+    }
+  }
+
+  const handleDeleteClick = (applicationId: string) => {
+    setApplicationToDelete(applicationId)
+    setShowDeleteDialog(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!applicationToDelete) return
+
+    setIsDeleting(true)
+    try {
+      const result = await deleteApplication(applicationToDelete)
+      if (result.success) {
+        setApplications(applications.filter((app) => app.id !== applicationToDelete))
+      }
+    } catch (error) {
+      console.error("Error deleting application:", error)
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteDialog(false)
+      setApplicationToDelete(null)
     }
   }
 
@@ -164,9 +200,14 @@ export function ApplicationsList({ jobs }: ApplicationsListProps) {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => handleViewApplication(application)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                        <div className="flex justify-end space-x-2">
+                          <Button variant="ghost" size="sm" onClick={() => handleViewApplication(application)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(application.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -193,6 +234,30 @@ export function ApplicationsList({ jobs }: ApplicationsListProps) {
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this application. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} disabled={isDeleting}>
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

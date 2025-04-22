@@ -33,7 +33,13 @@ export async function getJobs() {
 export async function createJob(jobData: any) {
   const supabase = createServerClient()
 
-  const { data, error } = await supabase.from("jobs").insert([jobData]).select()
+  // Format the date properly for PostgreSQL
+  const formattedData = {
+    ...jobData,
+    last_apply_date: jobData.last_apply_date ? new Date(jobData.last_apply_date).toISOString().split("T")[0] : null,
+  }
+
+  const { data, error } = await supabase.from("jobs").insert([formattedData]).select()
 
   if (error) {
     console.error("Error creating job:", error)
@@ -46,7 +52,13 @@ export async function createJob(jobData: any) {
 export async function updateJob(jobId: string, jobData: any) {
   const supabase = createServerClient()
 
-  const { data, error } = await supabase.from("jobs").update(jobData).eq("id", jobId).select()
+  // Format the date properly for PostgreSQL
+  const formattedData = {
+    ...jobData,
+    last_apply_date: jobData.last_apply_date ? new Date(jobData.last_apply_date).toISOString().split("T")[0] : null,
+  }
+
+  const { data, error } = await supabase.from("jobs").update(formattedData).eq("id", jobId).select()
 
   if (error) {
     console.error("Error updating job:", error)
@@ -59,6 +71,15 @@ export async function updateJob(jobId: string, jobData: any) {
 export async function deleteJob(jobId: string) {
   const supabase = createServerClient()
 
+  // First delete all applications for this job
+  const { error: appError } = await supabase.from("applications").delete().eq("job_id", jobId)
+
+  if (appError) {
+    console.error("Error deleting job applications:", appError)
+    throw new Error("Failed to delete job applications")
+  }
+
+  // Then delete the job
   const { error } = await supabase.from("jobs").delete().eq("id", jobId)
 
   if (error) {
@@ -127,6 +148,19 @@ export async function updateApplicationStatus(applicationId: string, status: str
   if (error) {
     console.error("Error updating application status:", error)
     throw new Error("Failed to update application status")
+  }
+
+  return { success: true }
+}
+
+export async function deleteApplication(applicationId: string) {
+  const supabase = createServerClient()
+
+  const { error } = await supabase.from("applications").delete().eq("id", applicationId)
+
+  if (error) {
+    console.error("Error deleting application:", error)
+    throw new Error("Failed to delete application")
   }
 
   return { success: true }

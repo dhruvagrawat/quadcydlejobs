@@ -13,6 +13,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { createJob, updateJob } from "@/lib/actions"
 import { Loader2, Plus, X } from "lucide-react"
+import { format } from "date-fns"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+import { CalendarIcon } from "lucide-react"
 
 const jobFormSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
@@ -21,6 +26,9 @@ const jobFormSchema = z.object({
   type: z.string().min(2, "Job type must be at least 2 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   application_url: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
+  last_apply_date: z.date({
+    required_error: "Please select a last application date",
+  }),
 })
 
 type JobFormValues = z.infer<typeof jobFormSchema> & {
@@ -49,6 +57,7 @@ export function JobEditor({ job, onJobCreated, onJobUpdated, onCancel }: JobEdit
       description: "",
       application_url: "",
       requirements: [],
+      last_apply_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default to 30 days from now
     },
   })
 
@@ -61,6 +70,9 @@ export function JobEditor({ job, onJobCreated, onJobUpdated, onCancel }: JobEdit
         type: job.type,
         description: job.description,
         application_url: job.application_url || "",
+        last_apply_date: job.last_apply_date
+          ? new Date(job.last_apply_date)
+          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       })
       setRequirements(job.requirements || [])
     }
@@ -188,6 +200,40 @@ export function JobEditor({ job, onJobCreated, onJobUpdated, onCancel }: JobEdit
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="last_apply_date"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Last Application Date *</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
+                    >
+                      {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormDescription>Applications will be accepted until this date</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
