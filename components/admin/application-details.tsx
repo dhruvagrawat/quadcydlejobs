@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
 
 interface ApplicationDetailsProps {
   application: any
@@ -78,16 +79,35 @@ export function ApplicationDetails({ application, job }: ApplicationDetailsProps
             </CardContent>
           </Card>
 
-          {application.resume_file_name && (
+          {application.resume_link && (
             <Card>
               <CardHeader>
                 <CardTitle>Resume</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500">{application.resume_file_name}</p>
-                <p className="text-xs text-gray-400 mt-1">
-                  (In a real application, there would be a download link here)
-                </p>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <a
+                    href={application.resume_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline flex items-center"
+                  >
+                    <span>View Resume</span>
+                  </a>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(application.resume_link)
+                    }}
+                  >
+                    Copy Link
+                  </Button>
+                </div>
+
+                <div className="border rounded-md overflow-hidden h-[400px]">
+                  <iframe src={application.resume_link} className="w-full h-full" title="Resume Preview" />
+                </div>
               </CardContent>
             </Card>
           )}

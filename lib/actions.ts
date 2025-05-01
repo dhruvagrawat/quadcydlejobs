@@ -109,7 +109,7 @@ export async function submitApplication(applicationData: any) {
     timezones: applicationData.timezones,
     extra_links: applicationData.extraLinks,
     skills: applicationData.skills,
-    resume_file_name: applicationData.resumeFileName,
+    resume_link: applicationData.resumeLink,
     status: "pending",
   }
 

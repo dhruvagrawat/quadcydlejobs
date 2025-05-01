@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -13,12 +11,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { submitApplication } from "@/lib/actions"
-import { Loader2, Upload, Github, Linkedin, Globe, Code } from "lucide-react"
+import { Loader2, Github, Linkedin, Globe, Code } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 
 // Update the formSchema to include the new fields
 const formSchema = z.object({
+  resumeLink: z.string().url("Please enter a valid resume URL"),
   firstName: z.string().min(2, "First name must be at least 2 characters"),
   lastName: z.string().min(2, "Last name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
@@ -128,7 +127,6 @@ const programmingSkills = [
 // Update the ApplicationForm component to include the new fields
 export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [resumeFile, setResumeFile] = useState<File | null>(null)
   const [showExtraLinks, setShowExtraLinks] = useState(false)
   const [extraLinks, setExtraLinks] = useState<{ label: string; url: string }[]>([])
   const [newLinkLabel, setNewLinkLabel] = useState("")
@@ -152,6 +150,7 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
       phone: "",
       linkedIn: "",
       portfolio: "",
+      resumeLink: "",
       experience: "",
       availability: "2weeks",
       heardFrom: "",
@@ -160,12 +159,6 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
       skills: [],
     },
   })
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setResumeFile(e.target.files[0])
-    }
-  }
 
   const handleAddExtraLink = () => {
     if (newLinkLabel && newLinkUrl) {
@@ -200,10 +193,10 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
     if (currentTimezones.includes(timezone)) {
       // Remove timezone if already selected
       const updatedTimezones = currentTimezones.filter((tz) => tz !== timezone)
-      form.setValue("timezones", updatedTimezones)
+      form.setValue("timezones", updatedTimezones, { shouldValidate: true })
     } else {
       // Add timezone if not already selected
-      form.setValue("timezones", [...currentTimezones, timezone])
+      form.setValue("timezones", [...currentTimezones, timezone], { shouldValidate: true })
     }
   }
 
@@ -213,10 +206,10 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
     if (currentSkills.includes(skill)) {
       // Remove skill if already selected
       const updatedSkills = currentSkills.filter((s) => s !== skill)
-      form.setValue("skills", updatedSkills)
+      form.setValue("skills", updatedSkills, { shouldValidate: true })
     } else {
       // Add skill if not already selected
-      form.setValue("skills", [...currentSkills, skill])
+      form.setValue("skills", [...currentSkills, skill], { shouldValidate: true })
     }
   }
 
@@ -245,7 +238,7 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
         ...values,
         jobId: job.id,
         jobTitle: job.title,
-        resumeFileName: resumeFile?.name || null,
+        resumeLink: values.resumeLink,
       })
 
       onSubmitSuccess()
@@ -351,30 +344,20 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="resume">Resume/CV *</Label>
-          <div className="flex items-center gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => document.getElementById("resume")?.click()}
-              className="w-full"
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              {resumeFile ? "Change File" : "Upload Resume"}
-            </Button>
-            {resumeFile && <span className="text-sm text-gray-500 truncate max-w-[250px]">{resumeFile.name}</span>}
-          </div>
-          <input
-            id="resume"
-            type="file"
-            accept=".pdf,.doc,.docx"
-            onChange={handleFileChange}
-            className="hidden"
-            required
-          />
-          <p className="text-sm text-gray-500">Accepted formats: PDF, DOC, DOCX (Max 5MB)</p>
-        </div>
+        <FormField
+          control={form.control}
+          name="resumeLink"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Resume/CV Link *</FormLabel>
+              <FormControl>
+                <Input placeholder="https://drive.google.com/file/d/your-resume" {...field} required />
+              </FormControl>
+              <FormDescription>Link to your resume (Google Drive, Dropbox, etc.)</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
@@ -644,7 +627,7 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
           )}
         />
 
-        <Button type="submit" className="w-full" disabled={isSubmitting || !resumeFile}>
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
