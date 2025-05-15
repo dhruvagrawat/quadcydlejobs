@@ -40,7 +40,7 @@ export function ApplicationModal({ job, isOpen, onClose }: ApplicationModalProps
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isSubmitted ? "Application Submitted" : `Apply for ${job.title}`}</DialogTitle>
           <DialogDescription>

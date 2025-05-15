@@ -316,12 +316,11 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
               {skillOptions.map((skill) => (
                 <div
                   key={skill}
-                  className={`flex items-center space-x-2 border rounded-md p-2 cursor-pointer transition-colors ${
-                    selectedSkills.includes(skill) ? "bg-primary/10 border-primary" : "hover:bg-gray-50"
-                  }`}
+                  className={`flex items-center space-x-2 border rounded-md p-2 cursor-pointer transition-colors ${selectedSkills.includes(skill) ? "bg-primary/10 border-primary" : "hover:bg-gray-50"
+                    }`}
                   onClick={() => handleSkillToggle(skill)}
                 >
-                  <Checkbox id={`skill-${skill}`} checked={selectedSkills.includes(skill)} onCheckedChange={() => {}} />
+                  <Checkbox id={`skill-${skill}`} checked={selectedSkills.includes(skill)} onCheckedChange={() => { }} />
                   <label htmlFor={`skill-${skill}`} className="text-sm cursor-pointer w-full">
                     {skill}
                   </label>
