@@ -76,18 +76,18 @@ export default function CareerPage() {
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-center">
                   <MapPin className="h-5 w-5 mr-2 text-gray-400" />
-                  <span>Quadcydle Headquarters</span>
+                  <a href="https://quadcydle.com">Quadcydle Headquarters</a>
                 </li>
                 <li className="flex items-center">
                   <Mail className="h-5 w-5 mr-2 text-gray-400" />
                   <a href="mailto:info@quadcydle.com" className="hover:text-primary">
-                    info@quadcydle.com
+                    hr@quadcydle.com
                   </a>
                 </li>
-                <li className="flex items-center">
+                {/* <li className="flex items-center">
                   <Phone className="h-5 w-5 mr-2 text-gray-400" />
                   <span>(555) 123-4567</span>
-                </li>
+                </li> */}
               </ul>
             </div>
 
