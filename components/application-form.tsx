@@ -54,21 +54,6 @@ const commonPlatforms = [
   { id: "medium", label: "Medium", icon: Code, placeholder: "https://medium.com/@username" },
 ]
 
-// Define major timezones grouped by region
-const timezoneOptions = [
-  { value: "us-eastern", label: "US Eastern (UTC-5/4)" },
-  { value: "us-central", label: "US Central (UTC-6/5)" },
-  { value: "us-mountain", label: "US Mountain (UTC-7/6)" },
-  { value: "us-pacific", label: "US Pacific (UTC-8/7)" },
-  { value: "europe-western", label: "Western Europe (UTC+1/2)" },
-  { value: "europe-central", label: "Central Europe (UTC+1/2)" },
-  { value: "europe-eastern", label: "Eastern Europe (UTC+2/3)" },
-  { value: "india", label: "India (UTC+5:30)" },
-  { value: "japan", label: "Japan (UTC+9)" },
-  { value: "china", label: "China (UTC+8)" },
-  { value: "australia-eastern", label: "Australia Eastern (UTC+10/11)" },
-]
-
 // Programming languages and skills
 const skillOptions = [
   "JavaScript",
@@ -101,7 +86,6 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
   const [newLinkLabel, setNewLinkLabel] = useState("")
   const [newLinkUrl, setNewLinkUrl] = useState("")
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null)
-  const [selectedTimezones, setSelectedTimezones] = useState<string[]>([])
   const [selectedSkills, setSelectedSkills] = useState<string[]>([])
 
   // Determine if this is a tech job based on title or department
@@ -153,10 +137,6 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
     setExtraLinks(newLinks)
   }
 
-  const handleTimezoneToggle = (timezone: string) => {
-    setSelectedTimezones((prev) => (prev.includes(timezone) ? prev.filter((t) => t !== timezone) : [...prev, timezone]))
-  }
-
   const handleSkillToggle = (skill: string) => {
     setSelectedSkills((prev) => (prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]))
   }
@@ -187,7 +167,6 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
         jobId: job.id,
         jobTitle: job.title,
         resumeLink: values.resumeLink,
-        timezones: selectedTimezones,
         extraLinks: extraLinks,
         skills: selectedSkills,
       })
@@ -351,32 +330,6 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
             </div>
           </div>
         )}
-
-        {/* Timezone Selection - Simplified UI */}
-        <div>
-          <FormLabel>Preferred Working Timezones</FormLabel>
-          <FormDescription className="mb-3">Select all timezones you're comfortable working in</FormDescription>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {timezoneOptions.map((timezone) => (
-              <div
-                key={timezone.value}
-                className={`flex items-center space-x-2 border rounded-md p-2 cursor-pointer transition-colors ${
-                  selectedTimezones.includes(timezone.value) ? "bg-primary/10 border-primary" : "hover:bg-gray-50"
-                }`}
-                onClick={() => handleTimezoneToggle(timezone.value)}
-              >
-                <Checkbox
-                  id={timezone.value}
-                  checked={selectedTimezones.includes(timezone.value)}
-                  onCheckedChange={() => {}}
-                />
-                <label htmlFor={timezone.value} className="text-sm cursor-pointer w-full">
-                  {timezone.label}
-                </label>
-              </div>
-            ))}
-          </div>
-        </div>
 
         <FormField
           control={form.control}

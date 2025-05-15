@@ -106,7 +106,6 @@ export async function submitApplication(applicationData: any) {
     experience: applicationData.experience,
     availability: applicationData.availability,
     heard_from: applicationData.heardFrom,
-    timezones: applicationData.timezones,
     extra_links: applicationData.extraLinks,
     skills: applicationData.skills,
     resume_link: applicationData.resumeLink,

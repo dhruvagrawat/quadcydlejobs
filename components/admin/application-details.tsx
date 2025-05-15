@@ -193,23 +193,6 @@ export function ApplicationDetails({ application, job }: ApplicationDetailsProps
                 <p>{application.heard_from}</p>
               </CardContent>
             </Card>
-
-            {application.timezones && application.timezones.length > 0 && (
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle>Preferred Working Timezones</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {application.timezones.map((timezone: string, index: number) => (
-                      <Badge key={index} variant="outline">
-                        {timezone}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
         </TabsContent>
       </Tabs>
