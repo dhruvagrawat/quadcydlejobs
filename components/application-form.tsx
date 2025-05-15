@@ -12,7 +12,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { submitApplication } from "@/lib/actions"
 import { Loader2, Github, Linkedin, Globe, Code } from "lucide-react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 
 // Update the formSchema to include the new fields
@@ -27,16 +26,6 @@ const formSchema = z.object({
   experience: z.string().min(10, "Please provide more details about your experience"),
   availability: z.enum(["immediately", "2weeks", "1month", "other"]),
   heardFrom: z.string().min(1, "Please let us know how you heard about us"),
-  timezones: z.array(z.string()).optional(),
-  extraLinks: z
-    .array(
-      z.object({
-        label: z.string(),
-        url: z.string().url("Please enter a valid URL"),
-      }),
-    )
-    .optional(),
-  skills: z.array(z.string()).optional(),
 })
 
 type Job = {
@@ -66,62 +55,42 @@ const commonPlatforms = [
 ]
 
 // Define major timezones grouped by region
-const timezoneGroups = [
-  {
-    region: "Americas",
-    timezones: [
-      { value: "us-eastern", label: "US Eastern (UTC-5/4)" },
-      { value: "us-central", label: "US Central (UTC-6/5)" },
-      { value: "us-mountain", label: "US Mountain (UTC-7/6)" },
-      { value: "us-pacific", label: "US Pacific (UTC-8/7)" },
-      { value: "canada-eastern", label: "Canada Eastern (UTC-5/4)" },
-      { value: "canada-pacific", label: "Canada Pacific (UTC-8/7)" },
-    ],
-  },
-  {
-    region: "Europe & Africa",
-    timezones: [
-      { value: "europe-western", label: "Western Europe (UTC+1/2)" },
-      { value: "europe-central", label: "Central Europe (UTC+1/2)" },
-      { value: "europe-eastern", label: "Eastern Europe (UTC+2/3)" },
-      { value: "africa-north", label: "North Africa (UTC+1/2)" },
-      { value: "africa-south", label: "South Africa (UTC+2)" },
-    ],
-  },
-  {
-    region: "Asia & Pacific",
-    timezones: [
-      { value: "india", label: "India (UTC+5:30)" },
-      { value: "japan", label: "Japan (UTC+9)" },
-      { value: "china", label: "China (UTC+8)" },
-      { value: "australia-eastern", label: "Australia Eastern (UTC+10/11)" },
-      { value: "australia-central", label: "Australia Central (UTC+9:30/10:30)" },
-      { value: "australia-western", label: "Australia Western (UTC+8)" },
-    ],
-  },
+const timezoneOptions = [
+  { value: "us-eastern", label: "US Eastern (UTC-5/4)" },
+  { value: "us-central", label: "US Central (UTC-6/5)" },
+  { value: "us-mountain", label: "US Mountain (UTC-7/6)" },
+  { value: "us-pacific", label: "US Pacific (UTC-8/7)" },
+  { value: "europe-western", label: "Western Europe (UTC+1/2)" },
+  { value: "europe-central", label: "Central Europe (UTC+1/2)" },
+  { value: "europe-eastern", label: "Eastern Europe (UTC+2/3)" },
+  { value: "india", label: "India (UTC+5:30)" },
+  { value: "japan", label: "Japan (UTC+9)" },
+  { value: "china", label: "China (UTC+8)" },
+  { value: "australia-eastern", label: "Australia Eastern (UTC+10/11)" },
 ]
 
 // Programming languages and skills
-const programmingSkills = [
-  {
-    category: "Languages",
-    skills: ["JavaScript", "TypeScript", "Python", "Java", "C#", "C++", "Ruby", "Go", "PHP", "Swift", "Kotlin", "Rust"],
-  },
-  {
-    category: "Frontend",
-    skills: ["React", "Angular", "Vue.js", "Next.js", "HTML/CSS", "Tailwind CSS", "Redux", "Webpack"],
-  },
-  {
-    category: "Backend",
-    skills: ["Node.js", "Express", "Django", "Ruby on Rails", "Spring Boot", "ASP.NET", "Laravel"],
-  },
-  { category: "Mobile", skills: ["React Native", "Flutter", "iOS/Swift", "Android/Kotlin", "Xamarin"] },
-  { category: "Database", skills: ["SQL", "MongoDB", "PostgreSQL", "MySQL", "Firebase", "Redis", "Elasticsearch"] },
-  { category: "DevOps", skills: ["Docker", "Kubernetes", "AWS", "Azure", "GCP", "CI/CD", "Jenkins", "Terraform"] },
-  {
-    category: "Other",
-    skills: ["GraphQL", "REST API", "WebSockets", "Machine Learning", "Data Science", "Blockchain", "Game Development"],
-  },
+const skillOptions = [
+  "JavaScript",
+  "TypeScript",
+  "Python",
+  "Java",
+  "C#",
+  "React",
+  "Angular",
+  "Vue.js",
+  "Next.js",
+  "Node.js",
+  "Express",
+  "HTML/CSS",
+  "Tailwind CSS",
+  "SQL",
+  "MongoDB",
+  "PostgreSQL",
+  "Docker",
+  "AWS",
+  "Git",
+  "CI/CD",
 ]
 
 // Update the ApplicationForm component to include the new fields
@@ -132,6 +101,8 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
   const [newLinkLabel, setNewLinkLabel] = useState("")
   const [newLinkUrl, setNewLinkUrl] = useState("")
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null)
+  const [selectedTimezones, setSelectedTimezones] = useState<string[]>([])
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([])
 
   // Determine if this is a tech job based on title or department
   const isTechJob =
@@ -154,9 +125,6 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
       experience: "",
       availability: "2weeks",
       heardFrom: "",
-      timezones: [],
-      extraLinks: [],
-      skills: [],
     },
   })
 
@@ -168,7 +136,6 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
 
         const newLinks = [...extraLinks, { label: newLinkLabel, url: newLinkUrl }]
         setExtraLinks(newLinks)
-        form.setValue("extraLinks", newLinks)
 
         // Reset inputs
         setNewLinkLabel("")
@@ -184,33 +151,14 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
   const handleRemoveExtraLink = (index: number) => {
     const newLinks = extraLinks.filter((_, i) => i !== index)
     setExtraLinks(newLinks)
-    form.setValue("extraLinks", newLinks)
   }
 
-  const handleTimezoneChange = (timezone: string) => {
-    const currentTimezones = form.getValues("timezones") || []
-
-    if (currentTimezones.includes(timezone)) {
-      // Remove timezone if already selected
-      const updatedTimezones = currentTimezones.filter((tz) => tz !== timezone)
-      form.setValue("timezones", updatedTimezones, { shouldValidate: true })
-    } else {
-      // Add timezone if not already selected
-      form.setValue("timezones", [...currentTimezones, timezone], { shouldValidate: true })
-    }
+  const handleTimezoneToggle = (timezone: string) => {
+    setSelectedTimezones((prev) => (prev.includes(timezone) ? prev.filter((t) => t !== timezone) : [...prev, timezone]))
   }
 
-  const handleSkillChange = (skill: string) => {
-    const currentSkills = form.getValues("skills") || []
-
-    if (currentSkills.includes(skill)) {
-      // Remove skill if already selected
-      const updatedSkills = currentSkills.filter((s) => s !== skill)
-      form.setValue("skills", updatedSkills, { shouldValidate: true })
-    } else {
-      // Add skill if not already selected
-      form.setValue("skills", [...currentSkills, skill], { shouldValidate: true })
-    }
+  const handleSkillToggle = (skill: string) => {
+    setSelectedSkills((prev) => (prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]))
   }
 
   const handlePlatformSelect = (platform: (typeof commonPlatforms)[0]) => {
@@ -239,6 +187,9 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
         jobId: job.id,
         jobTitle: job.title,
         resumeLink: values.resumeLink,
+        timezones: selectedTimezones,
+        extraLinks: extraLinks,
+        skills: selectedSkills,
       })
 
       onSubmitSuccess()
@@ -379,99 +330,53 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
 
         {/* Tech Skills Section - Only show for tech jobs */}
         {isTechJob && (
-          <FormField
-            control={form.control}
-            name="skills"
-            render={() => (
-              <FormItem>
-                <FormLabel>Technical Skills</FormLabel>
-                <FormDescription>Select all skills that apply to your experience</FormDescription>
-
-                <Tabs defaultValue={programmingSkills[0].category} className="w-full mt-2">
-                  <TabsList className="w-full flex flex-wrap h-auto mb-4">
-                    {programmingSkills.map((group) => (
-                      <TabsTrigger key={group.category} value={group.category} className="flex-grow">
-                        {group.category}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-
-                  {programmingSkills.map((group) => (
-                    <TabsContent key={group.category} value={group.category} className="mt-0">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                        {group.skills.map((skill) => {
-                          const isSelected = (form.getValues("skills") || []).includes(skill)
-                          return (
-                            <div
-                              key={skill}
-                              className={`flex items-center space-x-2 border rounded-md p-2 cursor-pointer transition-colors ${
-                                isSelected ? "bg-primary/10 border-primary" : "hover:bg-gray-50"
-                              }`}
-                              onClick={() => handleSkillChange(skill)}
-                            >
-                              <Checkbox id={`skill-${skill}`} checked={isSelected} onCheckedChange={() => {}} />
-                              <label htmlFor={`skill-${skill}`} className="text-sm cursor-pointer w-full">
-                                {skill}
-                              </label>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </TabsContent>
-                  ))}
-                </Tabs>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div>
+            <FormLabel>Technical Skills</FormLabel>
+            <FormDescription className="mb-3">Select all skills that apply to your experience</FormDescription>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {skillOptions.map((skill) => (
+                <div
+                  key={skill}
+                  className={`flex items-center space-x-2 border rounded-md p-2 cursor-pointer transition-colors ${
+                    selectedSkills.includes(skill) ? "bg-primary/10 border-primary" : "hover:bg-gray-50"
+                  }`}
+                  onClick={() => handleSkillToggle(skill)}
+                >
+                  <Checkbox id={`skill-${skill}`} checked={selectedSkills.includes(skill)} onCheckedChange={() => {}} />
+                  <label htmlFor={`skill-${skill}`} className="text-sm cursor-pointer w-full">
+                    {skill}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
-        {/* Timezone Selection - Improved UI */}
-        <FormField
-          control={form.control}
-          name="timezones"
-          render={() => (
-            <FormItem>
-              <FormLabel>Preferred Working Timezones</FormLabel>
-              <FormDescription>Select all timezones you're comfortable working in</FormDescription>
-
-              <Tabs defaultValue={timezoneGroups[0].region} className="w-full mt-2">
-                <TabsList className="w-full mb-4">
-                  {timezoneGroups.map((group) => (
-                    <TabsTrigger key={group.region} value={group.region}>
-                      {group.region}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-
-                {timezoneGroups.map((group) => (
-                  <TabsContent key={group.region} value={group.region} className="mt-0">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                      {group.timezones.map((timezone) => {
-                        const isSelected = (form.getValues("timezones") || []).includes(timezone.value)
-                        return (
-                          <div
-                            key={timezone.value}
-                            className={`flex items-center space-x-2 border rounded-md p-2 cursor-pointer transition-colors ${
-                              isSelected ? "bg-primary/10 border-primary" : "hover:bg-gray-50"
-                            }`}
-                            onClick={() => handleTimezoneChange(timezone.value)}
-                          >
-                            <Checkbox id={timezone.value} checked={isSelected} onCheckedChange={() => {}} />
-                            <label htmlFor={timezone.value} className="text-sm cursor-pointer w-full">
-                              {timezone.label}
-                            </label>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </TabsContent>
-                ))}
-              </Tabs>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Timezone Selection - Simplified UI */}
+        <div>
+          <FormLabel>Preferred Working Timezones</FormLabel>
+          <FormDescription className="mb-3">Select all timezones you're comfortable working in</FormDescription>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {timezoneOptions.map((timezone) => (
+              <div
+                key={timezone.value}
+                className={`flex items-center space-x-2 border rounded-md p-2 cursor-pointer transition-colors ${
+                  selectedTimezones.includes(timezone.value) ? "bg-primary/10 border-primary" : "hover:bg-gray-50"
+                }`}
+                onClick={() => handleTimezoneToggle(timezone.value)}
+              >
+                <Checkbox
+                  id={timezone.value}
+                  checked={selectedTimezones.includes(timezone.value)}
+                  onCheckedChange={() => {}}
+                />
+                <label htmlFor={timezone.value} className="text-sm cursor-pointer w-full">
+                  {timezone.label}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <FormField
           control={form.control}
