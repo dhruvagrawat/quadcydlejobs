@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -42,8 +43,11 @@ export default function AdminLoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl">Admin Login</CardTitle>
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-4">
+            <Image src="/logo.png" alt="Quadcydle Logo" width={60} height={60} className="h-14 w-auto" />
+          </div>
+          <CardTitle className="text-2xl">Quadcydle Admin</CardTitle>
           <CardDescription>Enter the admin password to access the job portal management.</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>

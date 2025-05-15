@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -10,6 +11,10 @@ interface ApplicationSuccessProps {
 export function ApplicationSuccess({ jobTitle }: ApplicationSuccessProps) {
   return (
     <div className="flex flex-col items-center justify-center py-6 text-center">
+      <div className="mb-4">
+        <Image src="/logo.png" alt="Quadcydle Logo" width={50} height={50} className="h-12 w-auto" />
+      </div>
+
       <div className="rounded-full bg-green-100 p-3 mb-4">
         <CheckCircle className="h-10 w-10 text-green-600" />
       </div>
@@ -17,8 +22,8 @@ export function ApplicationSuccess({ jobTitle }: ApplicationSuccessProps) {
       <h3 className="text-xl font-medium mb-2">Application Submitted!</h3>
 
       <p className="text-gray-600 mb-6">
-        Thank you for applying to the <span className="font-medium">{jobTitle}</span> position. We've received your
-        application and will review it shortly.
+        Thank you for applying to the <span className="font-medium">{jobTitle}</span> position at Quadcydle. We've
+        received your application and will review it shortly.
       </p>
 
       <div className="bg-gray-50 rounded-lg p-4 w-full mb-6">
@@ -42,6 +47,9 @@ export function ApplicationSuccess({ jobTitle }: ApplicationSuccessProps) {
       <div className="flex gap-4 w-full">
         <Button variant="outline" className="w-full" onClick={() => window.location.reload()}>
           View More Jobs
+        </Button>
+        <Button className="w-full" onClick={() => window.open("https://quadcydle.com/contact/", "_blank")}>
+          Contact Us
         </Button>
       </div>
     </div>

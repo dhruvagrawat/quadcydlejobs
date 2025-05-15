@@ -5,6 +5,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 
 export default function AdminLayout({
@@ -68,7 +69,10 @@ export default function AdminLayout({
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+            <div className="flex items-center">
+              <Image src="/logo.png" alt="Quadcydle Logo" width={40} height={40} className="h-8 w-auto mr-3" />
+              <h1 className="text-2xl font-bold text-gray-900">Quadcydle Admin</h1>
+            </div>
             <Button variant="outline" onClick={handleLogout}>
               Logout
             </Button>
@@ -97,6 +101,11 @@ export default function AdminLayout({
                   className={`px-3 py-2 rounded-md ${pathname.startsWith("/admin/applications") ? "bg-primary text-white" : "text-gray-700 hover:bg-gray-100"}`}
                 >
                   Applications
+                </Link>
+              </li>
+              <li>
+                <Link href="/" className="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">
+                  View Career Page
                 </Link>
               </li>
             </ul>
